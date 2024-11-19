@@ -31,21 +31,21 @@ class CoroutineBuilderExample {
 
     @Test(testName = "async")
     suspend fun coroutineAsync() {
-        val message = GlobalScope.async {
-            delay(100)
-            "abc"
-        }
+            val message = GlobalScope.async {
+                delay(100)
+                "abc"
+            }
 
-        val count = GlobalScope.async {
-            delay(100)
-            1 + 2
-        }
+            val count = GlobalScope.async {
+                delay(100)
+                1 + 2
+            }
 
-        print("delay")
-        delay(500)
+            print("delay")
+            delay(500)
 
-        val result = message.await().repeat(count.await())
-        println(result)
+            val result = message.await().repeat(count.await())
+            println(result)
     }
 
     @Test
@@ -62,4 +62,76 @@ class CoroutineBuilderExample {
         //Primary task: main @coroutine#2
         //Background task: DefaultDispatcher-worker-1 @coroutine#1
     }
+    @Test
+    fun scope () {
+        runBlocking {
+            println("Parent task started")
+
+            launch {
+                println("Task A started")
+                delay(200)
+                println("Task A finished")
+            }
+
+            launch {
+                println("Task B started")
+                delay(200)
+                println("Task B finished")
+            }
+
+            delay(100)
+            println("Parent task finished")
+        }
+
+        println("Shutting down")
+        //Parent task started
+        //Task A started
+        //Task B started
+        //Parent task finished
+        //Task A finished
+        //Task B finished
+        //Shutting down
+    }
+    @Test
+    fun scopeCoroutineScope () {
+        runBlocking {
+            println("Parent task started")
+
+            coroutineScope {
+                launch {
+                    println("Task A started")
+                    delay(200)
+                    println("Task A finished")
+                }
+
+                launch {
+                    println("Task B started")
+                    delay(200)
+                    println("Task B finished")
+                }
+            }
+
+            println("Parent task finished")
+        }
+
+        println("Shutting down")
+        //Parent task started
+        //Task A started
+        //Task B started
+        //Task A finished
+        //Task B finished
+        //Parent task finished
+        //Shutting down
+    }
+
+    @Test
+    fun coroutineContext() {
+        GlobalScope.launch {
+            println("Task is active: ${coroutineContext[Job.Key]!!.isActive}")
+        }
+        Thread.sleep(100)
+
+        //Task is active: true
+    }
+
 }
